@@ -1,7 +1,7 @@
 <p align="center">
   <img src="https://img.shields.io/badge/Case%20Study-Tredence%20Analytics-D97757?style=for-the-badge&logo=target&logoColor=white" alt="Case Study Badge"/>
   <img src="https://img.shields.io/badge/Role-Full%20Stack%20Engineering%20Intern-1D1917?style=for-the-badge&logo=briefcase&logoColor=white" alt="Role Badge"/>
-  <img src="https://img.shields.io/badge/Status-Phase%201%20Complete-5E8F73?style=for-the-badge&logo=checkmarx&logoColor=white" alt="Status Badge"/>
+  <img src="https://img.shields.io/badge/Status-Live%20%26%20Deployed-5E8F73?style=for-the-badge&logo=checkmarx&logoColor=white" alt="Status Badge"/>
   <img src="https://img.shields.io/badge/Timebox-4%E2%80%936%20Hours-C88A40?style=for-the-badge&logo=clockify&logoColor=white" alt="Timebox Badge"/>
   <img src="https://img.shields.io/badge/Tests-32%20Passing-4CAF50?style=for-the-badge&logo=vitest&logoColor=white" alt="Tests Badge"/>
   <img src="https://img.shields.io/badge/CI-GitHub%20Actions-2088FF?style=for-the-badge&logo=githubactions&logoColor=white" alt="CI Badge"/>
@@ -30,11 +30,18 @@
   <a href="#testing--ci">Testing &amp; CI</a> &middot;
   <a href="#tech-stack">Tech Stack</a> &middot;
   <a href="#getting-started">Getting Started</a> &middot;
+  <a href="#deployment">Deployment</a> &middot;
   <a href="#extensibility">Extensibility</a> &middot;
   <a href="#design-decisions">Design Decisions</a>
 </p>
 
 <p align="center">
+  <a href="https://hr-flow.ushamroy.com">
+    <img src="https://img.shields.io/badge/Live%20Product-hr--flow.ushamroy.com-5E8F73?style=for-the-badge&logo=googlechrome&logoColor=white" alt="Live Product"/>
+  </a>
+  <a href="https://github.com/uroy80/Tredence">
+    <img src="https://img.shields.io/badge/Source-GitHub-181717?style=for-the-badge&logo=github&logoColor=white" alt="Source"/>
+  </a>
   <a href="#getting-started">
     <img src="https://img.shields.io/badge/Run%20Locally-npm%20run%20dev-D97757?style=for-the-badge&logo=vite&logoColor=white" alt="Run Locally"/>
   </a>
@@ -73,6 +80,8 @@
 
 | Deliverable                            | Where                                                          | Status     |
 |----------------------------------------|----------------------------------------------------------------|------------|
+| **Live deployment**                    | [hr-flow.ushamroy.com](https://hr-flow.ushamroy.com) · Hostinger VPS + Cloudflare | Delivered |
+| **Git repository**                     | [github.com/uroy80/Tredence](https://github.com/uroy80/Tredence) | Delivered  |
 | **React app (Vite / Next.js)**         | [`vite.config.ts`](vite.config.ts) · React 19 + TS             | Delivered  |
 | **React Flow canvas w/ custom nodes**  | [`src/features/workflow/canvas`](src/features/workflow/canvas) | Delivered  |
 | **Node configuration forms (per type)**| [`src/features/workflow/forms`](src/features/workflow/forms)   | Delivered  |
@@ -493,6 +502,117 @@ npm run lint && npm run typecheck && npm test && npm run build
 ```
 
 **Requirements:** Node ≥ 20.
+
+---
+
+## Deployment
+
+Live at **[hr-flow.ushamroy.com](https://hr-flow.ushamroy.com)**.
+
+### Stack
+
+```
+  Cloudflare (Full-strict SSL, proxied A record)
+            │
+            ▼
+  Hostinger VPS · 187.127.150.202 · AlmaLinux 10
+            │
+            ▼
+  shared-nginx (nginx:alpine, Docker) — multi-vhost reverse proxy
+    ├─ srm-gtl.com         → hub-srm-portal
+    ├─ staff.srm-gtl.com   → hub-gw-user-hub
+    ├─ hub.srm-gtl.com     → hub-admin-dashboard
+    ├─ hr-flow.ushamroy.com  → /app/hr-flow  (this project — static SPA)
+    └─ _ (default)           → /app/frontend (GigShield)
+```
+
+The shared reverse-proxy container fronts three independent app stacks
+(Guidewire integration hub, GigShield Q-commerce, and this one). Each gets
+its own cert, its own server block, its own bind-mounted static root — no
+shared state between them.
+
+### Server layout (isolated from the other two stacks)
+
+```
+/root/hr-flow/dist/                 ← production bundle (bind-mounted read-only)
+/root/shared-nginx/nginx.conf       ← one shared vhost file; this project owns one server block
+/root/shared-nginx/ssl/
+  ├─ ushamroy.com.crt               ← Cloudflare Origin Certificate (SAN: *.ushamroy.com, ushamroy.com)
+  └─ ushamroy.com.key               ← private key (chmod 600)
+```
+
+The Docker container mounts include:
+
+```
+-v /root/shared-nginx/nginx.conf:/etc/nginx/nginx.conf:ro
+-v /root/shared-nginx/ssl/ushamroy.com.crt:/etc/ssl/certs/ushamroy.com.crt:ro
+-v /root/shared-nginx/ssl/ushamroy.com.key:/etc/ssl/private/ushamroy.com.key:ro
+-v /root/hr-flow/dist:/app/hr-flow:ro
+```
+
+### Nginx server block
+
+```nginx
+server {
+    listen 443 ssl;
+    http2 on;
+    server_name hr-flow.ushamroy.com;
+
+    ssl_certificate     /etc/ssl/certs/ushamroy.com.crt;
+    ssl_certificate_key /etc/ssl/private/ushamroy.com.key;
+    ssl_protocols TLSv1.2 TLSv1.3;
+
+    add_header Strict-Transport-Security "max-age=31536000" always;
+    add_header X-Content-Type-Options "nosniff" always;
+    add_header Referrer-Policy "strict-origin-when-cross-origin" always;
+    add_header X-Frame-Options "SAMEORIGIN" always;
+
+    root /app/hr-flow;
+    index index.html;
+
+    # Long-cache hashed assets (Vite appends content-hash to every file in /assets)
+    location /assets/ {
+        expires 1y;
+        add_header Cache-Control "public, immutable";
+        try_files $uri =404;
+    }
+
+    # SPA fallback
+    location / {
+        try_files $uri $uri/ /index.html;
+    }
+}
+```
+
+### Redeploy
+
+Static files only — no container restart needed, the bind mount is live.
+
+```bash
+npm run build
+rsync -az --delete -e "ssh -i ~/.ssh/hostinger" \
+  dist/ root@187.127.150.202:/root/hr-flow/dist/
+```
+
+Vite content-hashes every asset, so old-bundle links continue to resolve while
+the new `index.html` points at new hashes — zero-downtime swap.
+
+### Rotate the origin certificate
+
+Cloudflare dashboard → SSL/TLS → Origin Server → revoke + reissue, then:
+
+```bash
+scp -i ~/.ssh/hostinger new-cert.pem root@187.127.150.202:/root/shared-nginx/ssl/ushamroy.com.crt
+scp -i ~/.ssh/hostinger new-cert.key root@187.127.150.202:/root/shared-nginx/ssl/ushamroy.com.key
+ssh  -i ~/.ssh/hostinger root@187.127.150.202 \
+  'chmod 600 /root/shared-nginx/ssl/ushamroy.com.key && docker exec shared-nginx nginx -s reload'
+```
+
+### Observability
+
+```bash
+ssh -i ~/.ssh/hostinger root@187.127.150.202 'docker logs --tail 100 shared-nginx'
+```
 
 ---
 
