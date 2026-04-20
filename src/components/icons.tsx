@@ -143,3 +143,61 @@ export const UploadIcon = (props: IconProps) => (
     <line x1="12" y1="3" x2="12" y2="15" />
   </svg>
 );
+
+export const SunIcon = (props: IconProps) => (
+  <svg {...base} {...props}>
+    <circle cx="12" cy="12" r="4" />
+    <path d="M12 2v2" />
+    <path d="M12 20v2" />
+    <path d="M4.93 4.93l1.41 1.41" />
+    <path d="M17.66 17.66l1.41 1.41" />
+    <path d="M2 12h2" />
+    <path d="M20 12h2" />
+    <path d="M4.93 19.07l1.41-1.41" />
+    <path d="M17.66 6.34l1.41-1.41" />
+  </svg>
+);
+
+export const MoonIcon = (props: IconProps) => (
+  <svg {...base} {...props}>
+    <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z" />
+  </svg>
+);
+
+export const SparkleIcon = (props: IconProps) => (
+  <svg {...base} {...props}>
+    <path d="M12 3l1.9 5.7L19.5 10.5 13.9 12.4 12 18l-1.9-5.6L4.5 10.5 10.1 8.7 12 3z" />
+  </svg>
+);
+
+export const LogoIcon = (props: IconProps) => (
+  <svg
+    viewBox="0 0 32 32"
+    fill="none"
+    xmlns="http://www.w3.org/2000/svg"
+    {...props}
+  >
+    <rect width="32" height="32" rx="8" fill="url(#logoGrad)" />
+    <circle cx="10" cy="10" r="2.4" fill="white" />
+    <circle cx="22" cy="10" r="2.4" fill="white" />
+    <circle cx="16" cy="22" r="2.4" fill="white" />
+    <path
+      d="M10 10L16 22"
+      stroke="white"
+      strokeWidth="1.4"
+      strokeLinecap="round"
+    />
+    <path
+      d="M22 10L16 22"
+      stroke="white"
+      strokeWidth="1.4"
+      strokeLinecap="round"
+    />
+    <defs>
+      <linearGradient id="logoGrad" x1="0" y1="0" x2="32" y2="32">
+        <stop stopColor="#E08666" />
+        <stop offset="1" stopColor="#C26B4C" />
+      </linearGradient>
+    </defs>
+  </svg>
+);

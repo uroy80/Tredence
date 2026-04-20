@@ -1,23 +1,112 @@
 @import "tailwindcss";
 @import "@xyflow/react/dist/style.css";
 
-@theme {
-  --color-bg: #f8fafc;
-  --color-surface: #ffffff;
-  --color-border: #e2e8f0;
-  --color-ink: #0f172a;
-  --color-muted: #64748b;
-  --color-primary: #6366f1;
-  --color-primary-600: #4f46e5;
-  --color-success: #10b981;
-  --color-warn: #f59e0b;
-  --color-danger: #ef4444;
+@custom-variant dark (&:where([data-theme="dark"] *));
 
-  --color-start: #10b981;
-  --color-task: #3b82f6;
-  --color-approval: #f59e0b;
-  --color-automated: #8b5cf6;
-  --color-end: #ef4444;
+@theme {
+  --font-sans:
+    'Inter', ui-sans-serif, -apple-system, BlinkMacSystemFont, 'Segoe UI',
+    Roboto, 'Helvetica Neue', Arial, sans-serif;
+  --font-mono:
+    'JetBrains Mono', ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+
+  --color-bg: #faf9f5;
+  --color-surface: #ffffff;
+  --color-surface-2: #f5f3ec;
+  --color-ink: #1d1917;
+  --color-ink-soft: #3a3632;
+  --color-muted: #7a736c;
+  --color-faint: #a8a29a;
+  --color-border: #ece7dd;
+  --color-border-strong: #dcd5c6;
+
+  --color-primary: #d97757;
+  --color-primary-hover: #c26b4c;
+  --color-primary-soft: #fbeee6;
+  --color-primary-ink: #7a3a22;
+
+  --color-success: #5e8f73;
+  --color-success-soft: #e6f0ea;
+  --color-success-ink: #2e5a44;
+
+  --color-warn: #c88a40;
+  --color-warn-soft: #fbf0de;
+  --color-warn-ink: #73501f;
+
+  --color-danger: #b85c47;
+  --color-danger-soft: #f7e4df;
+  --color-danger-ink: #66281a;
+
+  --color-info: #4f6f9b;
+  --color-info-soft: #e5ecf5;
+  --color-info-ink: #2d4466;
+
+  --color-start: #5e8f73;
+  --color-task: #4f6f9b;
+  --color-approval: #c88a40;
+  --color-automated: #7a5fb8;
+  --color-end: #b85c47;
+
+  --color-start-soft: #eaf2ed;
+  --color-task-soft: #e7ecf4;
+  --color-approval-soft: #f6ecdb;
+  --color-automated-soft: #ede8f7;
+  --color-end-soft: #f5e3de;
+
+  --shadow-sm: 0 1px 2px rgba(29, 25, 23, 0.04);
+  --shadow-md: 0 2px 8px rgba(29, 25, 23, 0.06), 0 1px 2px rgba(29, 25, 23, 0.04);
+  --shadow-lg: 0 12px 32px rgba(29, 25, 23, 0.08), 0 4px 12px rgba(29, 25, 23, 0.04);
+  --shadow-xl: 0 24px 64px rgba(29, 25, 23, 0.14), 0 12px 24px rgba(29, 25, 23, 0.06);
+}
+
+[data-theme='dark'] {
+  --color-bg: #1f1e1c;
+  --color-surface: #26241f;
+  --color-surface-2: #2e2b25;
+  --color-ink: #f5f4f1;
+  --color-ink-soft: #d7d3cc;
+  --color-muted: #a6a09b;
+  --color-faint: #75706b;
+  --color-border: #3a3631;
+  --color-border-strong: #4a4540;
+
+  --color-primary: #e08666;
+  --color-primary-hover: #eb9576;
+  --color-primary-soft: #3a2a24;
+  --color-primary-ink: #f5c9b5;
+
+  --color-success: #7dae92;
+  --color-success-soft: #263d31;
+  --color-success-ink: #bcdcc7;
+
+  --color-warn: #d9a660;
+  --color-warn-soft: #3f2f1a;
+  --color-warn-ink: #f0cf95;
+
+  --color-danger: #d17865;
+  --color-danger-soft: #3d2620;
+  --color-danger-ink: #ecaf9d;
+
+  --color-info: #779ac7;
+  --color-info-soft: #253142;
+  --color-info-ink: #b8cee6;
+
+  --color-start: #7dae92;
+  --color-task: #779ac7;
+  --color-approval: #d9a660;
+  --color-automated: #9e87d4;
+  --color-end: #d17865;
+
+  --color-start-soft: #263d31;
+  --color-task-soft: #253142;
+  --color-approval-soft: #3f2f1a;
+  --color-automated-soft: #332a4a;
+  --color-end-soft: #3d2620;
+
+  --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.3);
+  --shadow-md: 0 2px 8px rgba(0, 0, 0, 0.35), 0 1px 2px rgba(0, 0, 0, 0.3);
+  --shadow-lg: 0 12px 32px rgba(0, 0, 0, 0.5), 0 4px 12px rgba(0, 0, 0, 0.3);
+  --shadow-xl: 0 24px 64px rgba(0, 0, 0, 0.6), 0 12px 24px rgba(0, 0, 0, 0.4);
 }
 
 html,
@@ -27,7 +116,11 @@ body,
   margin: 0;
   background: var(--color-bg);
   color: var(--color-ink);
-  font-family: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  font-family: var(--font-sans);
+  font-feature-settings: 'cv02', 'cv03', 'cv04', 'cv11', 'ss01';
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  letter-spacing: -0.003em;
 }
 
 #root {
@@ -35,34 +128,170 @@ body,
   flex-direction: column;
 }
 
+body {
+  background:
+    radial-gradient(
+      ellipse 80% 60% at 50% 0%,
+      color-mix(in srgb, var(--color-primary) 6%, transparent) 0%,
+      transparent 60%
+    ),
+    var(--color-bg);
+  transition: background 300ms ease;
+}
+
+[data-theme='dark'] body {
+  background:
+    radial-gradient(
+      ellipse 80% 60% at 50% 0%,
+      color-mix(in srgb, var(--color-primary) 8%, transparent) 0%,
+      transparent 60%
+    ),
+    var(--color-bg);
+}
+
+::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--color-border-strong);
+  border-radius: 10px;
+  border: 2px solid var(--color-bg);
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--color-faint);
+}
+
+.react-flow {
+  --rf-color-bg: var(--color-bg);
+}
+
 .react-flow__node {
-  font-family: inherit;
+  font-family: var(--font-sans);
 }
 
 .react-flow__edge-path {
-  stroke: #94a3b8;
+  stroke: var(--color-border-strong);
   stroke-width: 1.5;
+  transition: stroke 150ms ease;
 }
 
 .react-flow__edge.selected .react-flow__edge-path,
-.react-flow__edge:focus .react-flow__edge-path {
+.react-flow__edge:focus .react-flow__edge-path,
+.react-flow__edge:hover .react-flow__edge-path {
   stroke: var(--color-primary);
   stroke-width: 2;
+}
+
+.react-flow__edge.animated .react-flow__edge-path {
+  stroke-dasharray: 5;
+  animation: dashdraw 0.6s linear infinite;
+}
+
+@keyframes dashdraw {
+  to { stroke-dashoffset: -10; }
 }
 
 .react-flow__handle {
   width: 10px;
   height: 10px;
-  background: #ffffff;
-  border: 2px solid #94a3b8;
+  background: var(--color-surface);
+  border: 2px solid var(--color-border-strong);
+  transition: all 150ms ease;
 }
 
 .react-flow__handle:hover {
   border-color: var(--color-primary);
+  background: var(--color-primary-soft);
+  transform: scale(1.2);
+}
+
+.react-flow__handle-connecting {
+  border-color: var(--color-primary);
+  background: var(--color-primary-soft);
 }
 
 .react-flow__attribution {
   background: transparent !important;
   font-size: 10px;
-  opacity: 0.6;
+  opacity: 0.5;
+  color: var(--color-muted);
+}
+
+.react-flow__attribution a {
+  color: var(--color-muted) !important;
+}
+
+.react-flow__controls {
+  box-shadow: var(--shadow-md) !important;
+  border-radius: 10px;
+  overflow: hidden;
+  background: var(--color-surface) !important;
+  border: 1px solid var(--color-border);
+}
+
+.react-flow__controls-button {
+  background: var(--color-surface) !important;
+  border-bottom: 1px solid var(--color-border) !important;
+  color: var(--color-ink) !important;
+  transition: background 120ms ease;
+}
+
+.react-flow__controls-button:hover {
+  background: var(--color-surface-2) !important;
+}
+
+.react-flow__controls-button svg {
+  fill: var(--color-ink);
+}
+
+.react-flow__minimap {
+  box-shadow: var(--shadow-md) !important;
+  border-radius: 10px;
+  overflow: hidden;
+  background: color-mix(in srgb, var(--color-surface) 90%, transparent) !important;
+  backdrop-filter: blur(6px);
+  border: 1px solid var(--color-border);
+}
+
+.react-flow__selection {
+  background: color-mix(in srgb, var(--color-primary) 10%, transparent);
+  border: 1px dashed var(--color-primary);
+}
+
+@keyframes slide-up-fade {
+  from { opacity: 0; transform: translateY(8px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes slide-in-right {
+  from { opacity: 0; transform: translateX(24px); }
+  to { opacity: 1; transform: translateX(0); }
+}
+
+@keyframes fade-in {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes scale-in {
+  from { opacity: 0; transform: scale(0.96); }
+  to { opacity: 1; transform: scale(1); }
+}
+
+.anim-slide-up { animation: slide-up-fade 220ms cubic-bezier(0.16, 1, 0.3, 1); }
+.anim-slide-in-right { animation: slide-in-right 260ms cubic-bezier(0.16, 1, 0.3, 1); }
+.anim-fade-in { animation: fade-in 180ms ease-out; }
+.anim-scale-in { animation: scale-in 180ms cubic-bezier(0.16, 1, 0.3, 1); }
+
+*:focus-visible {
+  outline: 2px solid var(--color-primary);
+  outline-offset: 2px;
+  border-radius: 4px;
 }

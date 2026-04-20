@@ -35,7 +35,7 @@ export function ConfirmDialog() {
 
   return createPortal(
     <div
-      className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/40 p-4 backdrop-blur-sm"
+      className="anim-fade-in fixed inset-0 z-50 flex items-center justify-center bg-[color-mix(in_srgb,var(--color-ink)_40%,transparent)] p-4 backdrop-blur-sm"
       role="dialog"
       aria-modal="true"
       aria-labelledby="confirm-dialog-title"
@@ -44,30 +44,30 @@ export function ConfirmDialog() {
     >
       <div
         onClick={(e) => e.stopPropagation()}
-        className="w-full max-w-md rounded-xl border border-[var(--color-border)] bg-[var(--color-surface)] p-5 shadow-xl"
+        className="anim-scale-in w-full max-w-md rounded-2xl border border-[var(--color-border)] bg-[var(--color-surface)] p-5 shadow-[var(--shadow-xl)]"
       >
         <div className="flex items-start gap-3">
           <div
             className={clsx(
-              'flex h-9 w-9 shrink-0 items-center justify-center rounded-full',
+              'flex h-10 w-10 shrink-0 items-center justify-center rounded-full',
               active.destructive
-                ? 'bg-red-100 text-red-600'
-                : 'bg-blue-100 text-blue-600',
+                ? 'bg-[var(--color-danger-soft)] text-[var(--color-danger)]'
+                : 'bg-[var(--color-info-soft)] text-[var(--color-info)]',
             )}
           >
             <AlertIcon />
           </div>
-          <div className="min-w-0 flex-1">
+          <div className="min-w-0 flex-1 pt-1">
             <h2
               id="confirm-dialog-title"
-              className="text-base font-semibold text-[var(--color-ink)]"
+              className="text-[15px] font-semibold text-[var(--color-ink)]"
             >
               {active.title}
             </h2>
             {active.description && (
               <p
                 id="confirm-dialog-desc"
-                className="mt-1 text-sm text-[var(--color-muted)]"
+                className="mt-1.5 text-[13px] leading-relaxed text-[var(--color-muted)]"
               >
                 {active.description}
               </p>
@@ -75,11 +75,7 @@ export function ConfirmDialog() {
           </div>
         </div>
         <div className="mt-5 flex items-center justify-end gap-2">
-          <Button
-            size="sm"
-            variant="secondary"
-            onClick={() => resolve(false)}
-          >
+          <Button size="sm" variant="secondary" onClick={() => resolve(false)}>
             {active.cancelLabel ?? 'Cancel'}
           </Button>
           <Button

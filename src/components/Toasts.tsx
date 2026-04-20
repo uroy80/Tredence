@@ -6,31 +6,41 @@ import { AlertIcon, CheckIcon, XIcon } from './icons';
 
 const variantStyles: Record<
   ToastVariant,
-  { bg: string; border: string; icon: typeof CheckIcon; iconColor: string }
+  {
+    bg: string;
+    border: string;
+    icon: typeof CheckIcon;
+    iconBg: string;
+    iconColor: string;
+  }
 > = {
   success: {
-    bg: 'bg-emerald-50',
-    border: 'border-emerald-200',
+    bg: 'bg-[var(--color-surface)]',
+    border: 'border-[var(--color-border)]',
     icon: CheckIcon,
-    iconColor: 'text-emerald-600',
+    iconBg: 'bg-[var(--color-success-soft)]',
+    iconColor: 'text-[var(--color-success)]',
   },
   error: {
-    bg: 'bg-red-50',
-    border: 'border-red-200',
+    bg: 'bg-[var(--color-surface)]',
+    border: 'border-[var(--color-border)]',
     icon: AlertIcon,
-    iconColor: 'text-red-600',
+    iconBg: 'bg-[var(--color-danger-soft)]',
+    iconColor: 'text-[var(--color-danger)]',
   },
   info: {
-    bg: 'bg-blue-50',
-    border: 'border-blue-200',
+    bg: 'bg-[var(--color-surface)]',
+    border: 'border-[var(--color-border)]',
     icon: CheckIcon,
-    iconColor: 'text-blue-600',
+    iconBg: 'bg-[var(--color-info-soft)]',
+    iconColor: 'text-[var(--color-info)]',
   },
   warning: {
-    bg: 'bg-amber-50',
-    border: 'border-amber-200',
+    bg: 'bg-[var(--color-surface)]',
+    border: 'border-[var(--color-border)]',
     icon: AlertIcon,
-    iconColor: 'text-amber-600',
+    iconBg: 'bg-[var(--color-warn-soft)]',
+    iconColor: 'text-[var(--color-warn)]',
   },
 };
 
@@ -66,18 +76,26 @@ function ToastItem({ toast }: { toast: Toast }) {
       role="status"
       aria-live="polite"
       className={clsx(
-        'pointer-events-auto flex w-full max-w-sm items-start gap-3 rounded-lg border px-3.5 py-2.5 shadow-lg backdrop-blur-sm',
+        'anim-slide-in-right pointer-events-auto flex w-full max-w-sm items-start gap-3 rounded-xl border px-3.5 py-2.5 shadow-[var(--shadow-lg)] backdrop-blur-md',
         style.bg,
         style.border,
       )}
     >
-      <Icon className={clsx('mt-0.5 shrink-0', style.iconColor)} />
-      <div className="min-w-0 flex-1">
-        <div className="text-sm font-semibold text-[var(--color-ink)]">
+      <div
+        className={clsx(
+          'flex h-7 w-7 shrink-0 items-center justify-center rounded-lg',
+          style.iconBg,
+          style.iconColor,
+        )}
+      >
+        <Icon width={14} height={14} />
+      </div>
+      <div className="min-w-0 flex-1 pt-0.5">
+        <div className="text-[13px] font-semibold leading-tight text-[var(--color-ink)]">
           {toast.title}
         </div>
         {toast.description && (
-          <div className="mt-0.5 text-xs text-[var(--color-muted)]">
+          <div className="mt-0.5 text-[11.5px] leading-snug text-[var(--color-muted)]">
             {toast.description}
           </div>
         )}
@@ -86,9 +104,9 @@ function ToastItem({ toast }: { toast: Toast }) {
         type="button"
         onClick={() => dismiss(toast.id)}
         aria-label="Dismiss notification"
-        className="shrink-0 rounded p-0.5 text-[var(--color-muted)] hover:bg-white/60 hover:text-[var(--color-ink)]"
+        className="shrink-0 rounded-md p-1 text-[var(--color-faint)] transition-colors hover:bg-[var(--color-surface-2)] hover:text-[var(--color-ink)]"
       >
-        <XIcon width={14} height={14} />
+        <XIcon width={12} height={12} />
       </button>
     </div>
   );
