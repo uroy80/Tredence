@@ -1,0 +1,58 @@
+<svg width="240" height="240" viewBox="0 0 240 240" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <rect width="240" height="240" rx="56" fill="url(#bgGrad)"/>
+  <rect width="240" height="240" rx="56" fill="url(#shine)" fill-opacity="0.18"/>
+
+  <g transform="translate(60 56)">
+    <circle cx="12" cy="12" r="14" fill="#FFFFFF"/>
+    <circle cx="12" cy="12" r="7" fill="url(#nodeStart)"/>
+
+    <circle cx="108" cy="12" r="14" fill="#FFFFFF"/>
+    <circle cx="108" cy="12" r="7" fill="url(#nodeTask)"/>
+
+    <circle cx="60" cy="70" r="14" fill="#FFFFFF"/>
+    <circle cx="60" cy="70" r="7" fill="url(#nodeApproval)"/>
+
+    <circle cx="12" cy="128" r="14" fill="#FFFFFF"/>
+    <circle cx="12" cy="128" r="7" fill="url(#nodeAuto)"/>
+
+    <circle cx="108" cy="128" r="14" fill="#FFFFFF"/>
+    <circle cx="108" cy="128" r="7" fill="url(#nodeEnd)"/>
+
+    <path d="M12 12 L60 70"  stroke="#FFFFFF" stroke-width="2.4" stroke-linecap="round" stroke-opacity="0.9"/>
+    <path d="M108 12 L60 70" stroke="#FFFFFF" stroke-width="2.4" stroke-linecap="round" stroke-opacity="0.9"/>
+    <path d="M60 70 L12 128"  stroke="#FFFFFF" stroke-width="2.4" stroke-linecap="round" stroke-opacity="0.9"/>
+    <path d="M60 70 L108 128" stroke="#FFFFFF" stroke-width="2.4" stroke-linecap="round" stroke-opacity="0.9"/>
+  </g>
+
+  <defs>
+    <linearGradient id="bgGrad" x1="0" y1="0" x2="240" y2="240" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#E08666"/>
+      <stop offset="0.55" stop-color="#D97757"/>
+      <stop offset="1" stop-color="#B85C47"/>
+    </linearGradient>
+    <linearGradient id="shine" x1="0" y1="0" x2="240" y2="120" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#FFFFFF" stop-opacity="0.7"/>
+      <stop offset="1" stop-color="#FFFFFF" stop-opacity="0"/>
+    </linearGradient>
+    <linearGradient id="nodeStart" x1="0" y1="0" x2="14" y2="14" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#7DAE92"/>
+      <stop offset="1" stop-color="#5E8F73"/>
+    </linearGradient>
+    <linearGradient id="nodeTask" x1="0" y1="0" x2="14" y2="14" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#779AC7"/>
+      <stop offset="1" stop-color="#4F6F9B"/>
+    </linearGradient>
+    <linearGradient id="nodeApproval" x1="0" y1="0" x2="14" y2="14" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#D9A660"/>
+      <stop offset="1" stop-color="#C88A40"/>
+    </linearGradient>
+    <linearGradient id="nodeAuto" x1="0" y1="0" x2="14" y2="14" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#9E87D4"/>
+      <stop offset="1" stop-color="#7A5FB8"/>
+    </linearGradient>
+    <linearGradient id="nodeEnd" x1="0" y1="0" x2="14" y2="14" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#D17865"/>
+      <stop offset="1" stop-color="#B85C47"/>
+    </linearGradient>
+  </defs>
+</svg>
