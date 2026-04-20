@@ -178,25 +178,21 @@ export const LogoIcon = (props: IconProps) => (
     {...props}
   >
     <rect width="32" height="32" rx="8" fill="url(#logoGrad)" />
-    <circle cx="10" cy="10" r="2.4" fill="white" />
-    <circle cx="22" cy="10" r="2.4" fill="white" />
-    <circle cx="16" cy="22" r="2.4" fill="white" />
     <path
-      d="M10 10L16 22"
+      d="M10 9 C 10 16, 22 15, 22 22"
       stroke="white"
-      strokeWidth="1.4"
+      strokeWidth="2.2"
       strokeLinecap="round"
+      fill="none"
     />
-    <path
-      d="M22 10L16 22"
-      stroke="white"
-      strokeWidth="1.4"
-      strokeLinecap="round"
-    />
+    <circle cx="10" cy="9" r="3" fill="white" />
+    <circle cx="10" cy="9" r="1.2" fill="url(#logoGrad)" />
+    <circle cx="22" cy="22" r="3" fill="white" />
     <defs>
-      <linearGradient id="logoGrad" x1="0" y1="0" x2="32" y2="32">
-        <stop stopColor="#E08666" />
-        <stop offset="1" stopColor="#C26B4C" />
+      <linearGradient id="logoGrad" x1="4" y1="4" x2="28" y2="28" gradientUnits="userSpaceOnUse">
+        <stop stopColor="#EA9675" />
+        <stop offset="0.55" stopColor="#D97757" />
+        <stop offset="1" stopColor="#A84F3D" />
       </linearGradient>
     </defs>
   </svg>
