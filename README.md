@@ -80,7 +80,7 @@
 
 | Deliverable                            | Where                                                          | Status     |
 |----------------------------------------|----------------------------------------------------------------|------------|
-| **Live deployment**                    | [hr-flow.ushamroy.com](https://hr-flow.ushamroy.com) · AlmaLinux VPS behind Cloudflare | Delivered |
+| **Live deployment**                    | [hr-flow.ushamroy.com](https://hr-flow.ushamroy.com)           | Delivered  |
 | **Git repository**                     | [github.com/uroy80/Tredence](https://github.com/uroy80/Tredence) | Delivered  |
 | **React app (Vite / Next.js)**         | [`vite.config.ts`](vite.config.ts) · React 19 + TS             | Delivered  |
 | **React Flow canvas w/ custom nodes**  | [`src/features/workflow/canvas`](src/features/workflow/canvas) | Delivered  |
@@ -507,112 +507,20 @@ npm run lint && npm run typecheck && npm test && npm run build
 
 ## Deployment
 
-Live at **[hr-flow.ushamroy.com](https://hr-flow.ushamroy.com)**.
+Live at **[hr-flow.ushamroy.com](https://hr-flow.ushamroy.com)** over HTTPS.
 
-### Stack
-
-```
-  Cloudflare (Full-strict SSL, proxied A record)
-            │
-            ▼
-  Origin VPS · AlmaLinux 10
-            │
-            ▼
-  shared-nginx (nginx:alpine, Docker) — multi-vhost reverse proxy
-    ├─ srm-gtl.com         → hub-srm-portal
-    ├─ staff.srm-gtl.com   → hub-gw-user-hub
-    ├─ hub.srm-gtl.com     → hub-admin-dashboard
-    ├─ hr-flow.ushamroy.com  → /app/hr-flow  (this project — static SPA)
-    └─ _ (default)           → /app/frontend (GigShield)
-```
-
-The shared reverse-proxy container fronts three independent app stacks
-(Guidewire integration hub, GigShield Q-commerce, and this one). Each gets
-its own cert, its own server block, its own bind-mounted static root — no
-shared state between them.
-
-### Server layout (isolated from the other two stacks)
-
-```
-/root/hr-flow/dist/                 ← production bundle (bind-mounted read-only)
-/root/shared-nginx/nginx.conf       ← one shared vhost file; this project owns one server block
-/root/shared-nginx/ssl/
-  ├─ ushamroy.com.crt               ← Cloudflare Origin Certificate (SAN: *.ushamroy.com, ushamroy.com)
-  └─ ushamroy.com.key               ← private key (chmod 600)
-```
-
-The Docker container mounts include:
-
-```
--v /root/shared-nginx/nginx.conf:/etc/nginx/nginx.conf:ro
--v /root/shared-nginx/ssl/ushamroy.com.crt:/etc/ssl/certs/ushamroy.com.crt:ro
--v /root/shared-nginx/ssl/ushamroy.com.key:/etc/ssl/private/ushamroy.com.key:ro
--v /root/hr-flow/dist:/app/hr-flow:ro
-```
-
-### Nginx server block
-
-```nginx
-server {
-    listen 443 ssl;
-    http2 on;
-    server_name hr-flow.ushamroy.com;
-
-    ssl_certificate     /etc/ssl/certs/ushamroy.com.crt;
-    ssl_certificate_key /etc/ssl/private/ushamroy.com.key;
-    ssl_protocols TLSv1.2 TLSv1.3;
-
-    add_header Strict-Transport-Security "max-age=31536000" always;
-    add_header X-Content-Type-Options "nosniff" always;
-    add_header Referrer-Policy "strict-origin-when-cross-origin" always;
-    add_header X-Frame-Options "SAMEORIGIN" always;
-
-    root /app/hr-flow;
-    index index.html;
-
-    # Long-cache hashed assets (Vite appends content-hash to every file in /assets)
-    location /assets/ {
-        expires 1y;
-        add_header Cache-Control "public, immutable";
-        try_files $uri =404;
-    }
-
-    # SPA fallback
-    location / {
-        try_files $uri $uri/ /index.html;
-    }
-}
-```
-
-### Redeploy
-
-Static files only — no container restart needed, the bind mount is live.
+The app is a static SPA — `npm run build` produces a fully self-contained
+`dist/` (Vite content-hashes every asset for long-cache safety), and the
+server serves that directory with an SPA-fallback rewrite so client-side
+routing keeps working on deep links and page refreshes.
 
 ```bash
-npm run build
-rsync -az --delete -e "ssh -i ~/.ssh/origin_vps" \
-  dist/ root@&lt;origin-host&gt;:/root/hr-flow/dist/
+npm run build   # emits dist/ with hashed /assets and index.html
 ```
 
-Vite content-hashes every asset, so old-bundle links continue to resolve while
-the new `index.html` points at new hashes — zero-downtime swap.
-
-### Rotate the origin certificate
-
-Cloudflare dashboard → SSL/TLS → Origin Server → revoke + reissue, then:
-
-```bash
-scp -i ~/.ssh/origin_vps new-cert.pem root@&lt;origin-host&gt;:/root/shared-nginx/ssl/ushamroy.com.crt
-scp -i ~/.ssh/origin_vps new-cert.key root@&lt;origin-host&gt;:/root/shared-nginx/ssl/ushamroy.com.key
-ssh  -i ~/.ssh/origin_vps root@&lt;origin-host&gt; \
-  'chmod 600 /root/shared-nginx/ssl/ushamroy.com.key && docker exec shared-nginx nginx -s reload'
-```
-
-### Observability
-
-```bash
-ssh -i ~/.ssh/origin_vps root@&lt;origin-host&gt; 'docker logs --tail 100 shared-nginx'
-```
+Because every file in `/assets/` is content-hashed, redeploys are a
+zero-downtime rsync of `dist/` — old links continue to resolve while the
+new `index.html` points at the new hashes.
 
 ---
 
