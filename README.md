@@ -80,7 +80,7 @@
 
 | Deliverable                            | Where                                                          | Status     |
 |----------------------------------------|----------------------------------------------------------------|------------|
-| **Live deployment**                    | [hr-flow.ushamroy.com](https://hr-flow.ushamroy.com) · Hostinger VPS + Cloudflare | Delivered |
+| **Live deployment**                    | [hr-flow.ushamroy.com](https://hr-flow.ushamroy.com) · AlmaLinux VPS behind Cloudflare | Delivered |
 | **Git repository**                     | [github.com/uroy80/Tredence](https://github.com/uroy80/Tredence) | Delivered  |
 | **React app (Vite / Next.js)**         | [`vite.config.ts`](vite.config.ts) · React 19 + TS             | Delivered  |
 | **React Flow canvas w/ custom nodes**  | [`src/features/workflow/canvas`](src/features/workflow/canvas) | Delivered  |
@@ -515,7 +515,7 @@ Live at **[hr-flow.ushamroy.com](https://hr-flow.ushamroy.com)**.
   Cloudflare (Full-strict SSL, proxied A record)
             │
             ▼
-  Hostinger VPS · 187.127.150.202 · AlmaLinux 10
+  Origin VPS · AlmaLinux 10
             │
             ▼
   shared-nginx (nginx:alpine, Docker) — multi-vhost reverse proxy
@@ -590,8 +590,8 @@ Static files only — no container restart needed, the bind mount is live.
 
 ```bash
 npm run build
-rsync -az --delete -e "ssh -i ~/.ssh/hostinger" \
-  dist/ root@187.127.150.202:/root/hr-flow/dist/
+rsync -az --delete -e "ssh -i ~/.ssh/origin_vps" \
+  dist/ root@&lt;origin-host&gt;:/root/hr-flow/dist/
 ```
 
 Vite content-hashes every asset, so old-bundle links continue to resolve while
@@ -602,16 +602,16 @@ the new `index.html` points at new hashes — zero-downtime swap.
 Cloudflare dashboard → SSL/TLS → Origin Server → revoke + reissue, then:
 
 ```bash
-scp -i ~/.ssh/hostinger new-cert.pem root@187.127.150.202:/root/shared-nginx/ssl/ushamroy.com.crt
-scp -i ~/.ssh/hostinger new-cert.key root@187.127.150.202:/root/shared-nginx/ssl/ushamroy.com.key
-ssh  -i ~/.ssh/hostinger root@187.127.150.202 \
+scp -i ~/.ssh/origin_vps new-cert.pem root@&lt;origin-host&gt;:/root/shared-nginx/ssl/ushamroy.com.crt
+scp -i ~/.ssh/origin_vps new-cert.key root@&lt;origin-host&gt;:/root/shared-nginx/ssl/ushamroy.com.key
+ssh  -i ~/.ssh/origin_vps root@&lt;origin-host&gt; \
   'chmod 600 /root/shared-nginx/ssl/ushamroy.com.key && docker exec shared-nginx nginx -s reload'
 ```
 
 ### Observability
 
 ```bash
-ssh -i ~/.ssh/hostinger root@187.127.150.202 'docker logs --tail 100 shared-nginx'
+ssh -i ~/.ssh/origin_vps root@&lt;origin-host&gt; 'docker logs --tail 100 shared-nginx'
 ```
 
 ---
