@@ -253,11 +253,23 @@ body {
 
 .react-flow__minimap {
   box-shadow: var(--shadow-md) !important;
-  border-radius: 10px;
+  border-radius: 12px !important;
   overflow: hidden;
-  background: color-mix(in srgb, var(--color-surface) 90%, transparent) !important;
-  backdrop-filter: blur(6px);
-  border: 1px solid var(--color-border);
+  backdrop-filter: blur(8px);
+  margin: 12px !important;
+}
+
+.react-flow__minimap-mask {
+  fill-opacity: 1;
+}
+
+.react-flow__minimap-node {
+  fill-opacity: 0.9;
+  transition: fill-opacity 150ms ease;
+}
+
+.react-flow__minimap:hover .react-flow__minimap-node {
+  fill-opacity: 1;
 }
 
 .react-flow__selection {

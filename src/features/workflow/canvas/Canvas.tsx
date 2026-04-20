@@ -1,4 +1,4 @@
-import { useCallback, useRef, type DragEvent } from 'react';
+import { useCallback, useMemo, useRef, type DragEvent } from 'react';
 import {
   Background,
   BackgroundVariant,
@@ -9,15 +9,55 @@ import {
   useReactFlow,
   type NodeMouseHandler,
   type OnSelectionChangeParams,
+  type Node,
 } from '@xyflow/react';
 import { useWorkflowStore } from '@/store/workflowStore';
 import { nodeTypes } from '@/features/workflow/nodes/nodeTypesMap';
 import { DRAG_MIME } from '@/features/workflow/sidebar/Sidebar';
 import type { NodeKind, WorkflowNode } from '@/types';
+import { useTheme } from '@/hooks/useTheme';
+
+const MINIMAP_COLORS: Record<'light' | 'dark', Record<NodeKind, string>> = {
+  light: {
+    start: '#5E8F73',
+    task: '#4F6F9B',
+    approval: '#C88A40',
+    automated: '#7A5FB8',
+    end: '#B85C47',
+  },
+  dark: {
+    start: '#7DAE92',
+    task: '#779AC7',
+    approval: '#D9A660',
+    automated: '#9E87D4',
+    end: '#D17865',
+  },
+};
+
+const BG_DOT_COLORS: Record<'light' | 'dark', string> = {
+  light: '#D8D2C3',
+  dark: '#3A3631',
+};
+
+const MASK_COLORS: Record<'light' | 'dark', string> = {
+  light: 'rgba(250, 249, 245, 0.78)',
+  dark: 'rgba(31, 30, 28, 0.78)',
+};
+
+const MINIMAP_BG: Record<'light' | 'dark', string> = {
+  light: '#FFFFFF',
+  dark: '#26241F',
+};
+
+const MINIMAP_STROKE: Record<'light' | 'dark', string> = {
+  light: '#ECE7DD',
+  dark: '#3A3631',
+};
 
 function CanvasInner() {
   const wrapperRef = useRef<HTMLDivElement | null>(null);
   const { screenToFlowPosition } = useReactFlow();
+  const { theme } = useTheme();
 
   const nodes = useWorkflowStore((s) => s.nodes);
   const edges = useWorkflowStore((s) => s.edges);
@@ -65,8 +105,39 @@ function CanvasInner() {
     [setSelectedNode],
   );
 
+  const nodeColor = useCallback(
+    (n: Node) => {
+      const kind = (n.type as NodeKind) ?? 'task';
+      return MINIMAP_COLORS[theme][kind] ?? MINIMAP_COLORS[theme].task;
+    },
+    [theme],
+  );
+
+  const nodeStrokeColor = useCallback(
+    (n: Node) => {
+      const kind = (n.type as NodeKind) ?? 'task';
+      return MINIMAP_COLORS[theme][kind] ?? MINIMAP_COLORS[theme].task;
+    },
+    [theme],
+  );
+
+  const minimapStyle = useMemo(
+    () => ({
+      backgroundColor: MINIMAP_BG[theme],
+      border: `1px solid ${MINIMAP_STROKE[theme]}`,
+      width: 180,
+      height: 120,
+    }),
+    [theme],
+  );
+
   return (
-    <div ref={wrapperRef} className="relative h-full w-full" onDrop={onDrop} onDragOver={onDragOver}>
+    <div
+      ref={wrapperRef}
+      className="relative h-full w-full"
+      onDrop={onDrop}
+      onDragOver={onDragOver}
+    >
       <ReactFlow
         nodes={nodes}
         edges={edges}
@@ -83,24 +154,27 @@ function CanvasInner() {
         proOptions={{ hideAttribution: false }}
         className="bg-[var(--color-bg)]"
       >
-        <Background variant={BackgroundVariant.Dots} gap={18} size={1.2} color="#cbd5e1" />
+        <Background
+          variant={BackgroundVariant.Dots}
+          gap={18}
+          size={1.2}
+          color={BG_DOT_COLORS[theme]}
+        />
         <Controls position="bottom-left" showInteractive={false} />
         <MiniMap
           position="bottom-right"
           pannable
           zoomable
-          nodeColor={(n) => {
-            const kind = (n.data as { kind?: NodeKind }).kind;
-            const map: Record<NodeKind, string> = {
-              start: '#10b981',
-              task: '#3b82f6',
-              approval: '#f59e0b',
-              automated: '#8b5cf6',
-              end: '#ef4444',
-            };
-            return map[kind ?? 'task'] ?? '#94a3b8';
-          }}
-          maskColor="rgba(248,250,252,0.7)"
+          ariaLabel="Workflow minimap"
+          nodeColor={nodeColor}
+          nodeStrokeColor={nodeStrokeColor}
+          nodeStrokeWidth={3}
+          nodeBorderRadius={6}
+          maskColor={MASK_COLORS[theme]}
+          maskStrokeColor={MINIMAP_STROKE[theme]}
+          maskStrokeWidth={1}
+          offsetScale={2}
+          style={minimapStyle}
         />
       </ReactFlow>
     </div>
