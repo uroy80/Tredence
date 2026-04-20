@@ -21,7 +21,6 @@ function CanvasInner() {
 
   const nodes = useWorkflowStore((s) => s.nodes);
   const edges = useWorkflowStore((s) => s.edges);
-  const selectedNodeId = useWorkflowStore((s) => s.selectedNodeId);
   const onNodesChange = useWorkflowStore((s) => s.onNodesChange);
   const onEdgesChange = useWorkflowStore((s) => s.onEdgesChange);
   const onConnect = useWorkflowStore((s) => s.onConnect);
@@ -61,7 +60,7 @@ function CanvasInner() {
   const onSelectionChange = useCallback(
     (params: OnSelectionChangeParams) => {
       const first = params.nodes[0];
-      if (first) setSelectedNode(first.id);
+      setSelectedNode(first ? first.id : null);
     },
     [setSelectedNode],
   );
@@ -69,9 +68,7 @@ function CanvasInner() {
   return (
     <div ref={wrapperRef} className="relative h-full w-full" onDrop={onDrop} onDragOver={onDragOver}>
       <ReactFlow
-        nodes={nodes.map((n) =>
-          n.id === selectedNodeId ? { ...n, selected: true } : n,
-        )}
+        nodes={nodes}
         edges={edges}
         nodeTypes={nodeTypes}
         onNodesChange={onNodesChange}

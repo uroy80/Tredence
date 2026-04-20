@@ -1,5 +1,6 @@
 import { useCallback, useState } from 'react';
 import { useStore } from 'zustand';
+import { useShallow } from 'zustand/react/shallow';
 import { Sidebar } from '@/features/workflow/sidebar/Sidebar';
 import { Canvas } from '@/features/workflow/canvas/Canvas';
 import { NodeFormPanel } from '@/features/workflow/forms/NodeFormPanel';
@@ -15,10 +16,10 @@ import { toast } from '@/store/toastStore';
 export function App() {
   const [sandboxOpen, setSandboxOpen] = useState(false);
 
-  const { undo, redo } = useStore(useTemporalStore, (s) => ({
-    undo: s.undo,
-    redo: s.redo,
-  }));
+  const { undo, redo } = useStore(
+    useTemporalStore,
+    useShallow((s) => ({ undo: s.undo, redo: s.redo })),
+  );
   const exportGraph = useWorkflowStore((s) => s.exportGraph);
   const setSelectedNode = useWorkflowStore((s) => s.setSelectedNode);
 

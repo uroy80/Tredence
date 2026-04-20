@@ -1,5 +1,6 @@
 import { useRef } from 'react';
 import { useStore } from 'zustand';
+import { useShallow } from 'zustand/react/shallow';
 import { useWorkflowStore, useTemporalStore } from '@/store/workflowStore';
 import { confirmDialog } from '@/store/confirmStore';
 import { toast } from '@/store/toastStore';
@@ -27,18 +28,15 @@ export function Toolbar({ onOpenSandbox }: ToolbarProps) {
   const loadGraph = useWorkflowStore((s) => s.loadGraph);
   const fileRef = useRef<HTMLInputElement | null>(null);
 
-  const { undo, redo, pastStates, futureStates } = useStore(
+  const { undo, redo, canUndo, canRedo } = useStore(
     useTemporalStore,
-    (s) => ({
+    useShallow((s) => ({
       undo: s.undo,
       redo: s.redo,
-      pastStates: s.pastStates,
-      futureStates: s.futureStates,
-    }),
+      canUndo: s.pastStates.length > 0,
+      canRedo: s.futureStates.length > 0,
+    })),
   );
-
-  const canUndo = pastStates.length > 0;
-  const canRedo = futureStates.length > 0;
 
   const onExport = () => {
     try {
