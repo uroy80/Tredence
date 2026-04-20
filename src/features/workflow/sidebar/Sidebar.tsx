@@ -86,7 +86,7 @@ export function Sidebar() {
         <div className="font-medium text-[var(--color-ink)]">Tips</div>
         <ul className="mt-1 list-disc space-y-0.5 pl-4">
           <li>Click a node to edit it</li>
-          <li>Drag from ● handles to connect</li>
+          <li>Drag between node handles to connect</li>
           <li>Select + Backspace to delete</li>
         </ul>
       </div>

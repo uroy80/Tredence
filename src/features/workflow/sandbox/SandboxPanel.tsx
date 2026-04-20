@@ -1,13 +1,15 @@
-import { useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import clsx from 'clsx';
 import { useWorkflowStore } from '@/store/workflowStore';
 import { simulateWorkflow } from '@/api';
 import { validateWorkflow } from '@/utils/validation';
+import { toast } from '@/store/toastStore';
+import { logger } from '@/utils/logger';
 import type {
   SimulationResult,
   ValidationResult,
-  WorkflowNode,
   WorkflowEdge,
+  WorkflowNode,
 } from '@/types';
 import { Button } from '@/components/ui/Button';
 import {
@@ -22,6 +24,9 @@ interface SandboxPanelProps {
   onClose: () => void;
 }
 
+const FOCUSABLE_SELECTOR =
+  'button:not([disabled]), [href], input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])';
+
 export function SandboxPanel({ open, onClose }: SandboxPanelProps) {
   const nodes = useWorkflowStore((s) => s.nodes);
   const edges = useWorkflowStore((s) => s.edges);
@@ -30,6 +35,45 @@ export function SandboxPanel({ open, onClose }: SandboxPanelProps) {
   const [running, setRunning] = useState(false);
   const [result, setResult] = useState<SimulationResult | null>(null);
   const [validation, setValidation] = useState<ValidationResult | null>(null);
+  const dialogRef = useRef<HTMLDivElement | null>(null);
+  const runBtnRef = useRef<HTMLButtonElement | null>(null);
+
+  useEffect(() => {
+    if (!open) return;
+    const prevActive = document.activeElement as HTMLElement | null;
+    runBtnRef.current?.focus();
+
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') {
+        e.preventDefault();
+        onClose();
+        return;
+      }
+      if (e.key !== 'Tab') return;
+      const root = dialogRef.current;
+      if (!root) return;
+      const focusable = Array.from(
+        root.querySelectorAll<HTMLElement>(FOCUSABLE_SELECTOR),
+      ).filter(
+        (el) => el.offsetParent !== null || el === document.activeElement,
+      );
+      if (focusable.length === 0) return;
+      const first = focusable[0];
+      const last = focusable[focusable.length - 1];
+      if (e.shiftKey && document.activeElement === first) {
+        e.preventDefault();
+        last.focus();
+      } else if (!e.shiftKey && document.activeElement === last) {
+        e.preventDefault();
+        first.focus();
+      }
+    };
+    document.addEventListener('keydown', onKey);
+    return () => {
+      document.removeEventListener('keydown', onKey);
+      prevActive?.focus();
+    };
+  }, [open, onClose]);
 
   if (!open) return null;
 
@@ -40,17 +84,32 @@ export function SandboxPanel({ open, onClose }: SandboxPanelProps) {
     try {
       const res = await simulateWorkflow({ graph: { nodes, edges } });
       setResult(res);
+      if (res.ok) {
+        toast.success('Simulation complete', res.summary);
+      } else {
+        toast.warning('Simulation blocked', res.summary);
+      }
+    } catch (e) {
+      const message = (e as Error).message;
+      logger.error('Simulation threw', { error: message });
+      toast.error('Simulation failed', message);
     } finally {
       setRunning(false);
     }
   };
 
   return (
-    <div className="fixed inset-0 z-40 flex items-end justify-end bg-slate-900/30 backdrop-blur-[2px]">
+    <div
+      className="fixed inset-0 z-40 flex items-end justify-end bg-slate-900/30 backdrop-blur-[2px]"
+      onClick={onClose}
+    >
       <div
+        ref={dialogRef}
         className="flex h-full w-full max-w-[560px] flex-col border-l border-[var(--color-border)] bg-[var(--color-surface)] shadow-xl"
         role="dialog"
         aria-label="Workflow sandbox"
+        aria-modal="true"
+        onClick={(e) => e.stopPropagation()}
       >
         <header className="flex items-start justify-between gap-3 border-b border-[var(--color-border)] px-5 py-4">
           <div>
@@ -66,6 +125,7 @@ export function SandboxPanel({ open, onClose }: SandboxPanelProps) {
           </div>
           <div className="flex items-center gap-2">
             <Button
+              ref={runBtnRef}
               variant="primary"
               size="sm"
               disabled={running}
@@ -74,16 +134,14 @@ export function SandboxPanel({ open, onClose }: SandboxPanelProps) {
             >
               {running ? 'Simulating…' : 'Run simulation'}
             </Button>
-            <Button variant="ghost" size="sm" onClick={onClose} aria-label="Close">
+            <Button variant="ghost" size="sm" onClick={onClose} aria-label="Close sandbox">
               <XIcon />
             </Button>
           </div>
         </header>
 
         <div className="flex-1 overflow-y-auto px-5 py-4">
-          {!validation && !result && (
-            <EmptyState />
-          )}
+          {!validation && !result && <EmptyState />}
 
           {validation && (
             <ValidationReport
@@ -120,8 +178,8 @@ function EmptyState() {
         Ready to simulate
       </div>
       <p className="max-w-sm text-xs">
-        The sandbox will validate your workflow structure and walk through
-        each reachable node using the mock <code>/simulate</code> API.
+        The sandbox will validate your workflow structure and walk through each
+        reachable node using the mock <code>/simulate</code> API.
       </p>
     </div>
   );
@@ -297,10 +355,18 @@ function ExecutionTimeline({
 
       <details className="mt-4 rounded-lg border border-[var(--color-border)] bg-slate-50 px-3 py-2 text-xs">
         <summary className="cursor-pointer font-medium text-[var(--color-muted)]">
-          Request payload
+          Run metadata
         </summary>
         <pre className="mt-2 overflow-x-auto text-[11px] leading-relaxed text-slate-700">
-{JSON.stringify({ startedAt: result.startedAt, finishedAt: result.finishedAt }, null, 2)}
+{JSON.stringify(
+  {
+    startedAt: result.startedAt,
+    finishedAt: result.finishedAt,
+    steps: result.steps.length,
+  },
+  null,
+  2,
+)}
         </pre>
       </details>
     </div>

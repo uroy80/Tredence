@@ -1,4 +1,5 @@
 import { create } from 'zustand';
+import { temporal } from 'zundo';
 import { nanoid } from 'nanoid';
 import {
   addEdge,
@@ -12,10 +13,16 @@ import {
 import type {
   NodeKind,
   WorkflowEdge,
+  WorkflowGraph,
   WorkflowNode,
   WorkflowNodeData,
 } from '@/types';
 import { createNodeData } from '@/features/workflow/nodes/nodeRegistry';
+import {
+  loadFromLocalStorage,
+  saveToLocalStorage,
+} from '@/utils/persistence';
+import { logger } from '@/utils/logger';
 
 interface WorkflowState {
   nodes: WorkflowNode[];
@@ -33,8 +40,9 @@ interface WorkflowState {
 
   setSelectedNode: (nodeId: string | null) => void;
 
-  loadGraph: (graph: { nodes: WorkflowNode[]; edges: WorkflowEdge[] }) => void;
+  loadGraph: (graph: WorkflowGraph) => void;
   resetGraph: () => void;
+  exportGraph: () => WorkflowGraph;
 }
 
 const seedNodes: WorkflowNode[] = [
@@ -46,73 +54,126 @@ const seedNodes: WorkflowNode[] = [
   },
 ];
 
-export const useWorkflowStore = create<WorkflowState>((set, get) => ({
-  nodes: seedNodes,
-  edges: [],
-  selectedNodeId: null,
-
-  onNodesChange: (changes) => {
-    set({ nodes: applyNodeChanges(changes, get().nodes) });
-  },
-  onEdgesChange: (changes) => {
-    set({ edges: applyEdgeChanges(changes, get().edges) });
-  },
-  onConnect: (connection) => {
-    if (connection.source === connection.target) return;
-    set({
-      edges: addEdge(
-        { ...connection, id: `e-${nanoid(8)}`, animated: true },
-        get().edges,
-      ),
+function initialGraph(): WorkflowGraph {
+  const restored = loadFromLocalStorage();
+  if (restored && restored.nodes.length > 0) {
+    logger.info('Restored workflow from localStorage', {
+      nodes: restored.nodes.length,
+      edges: restored.edges.length,
     });
-  },
+    return restored;
+  }
+  return { nodes: seedNodes, edges: [] };
+}
 
-  addNode: (kind, position) => {
-    const node = {
-      id: `${kind}-${nanoid(6)}`,
-      type: kind,
-      position,
-      data: createNodeData(kind),
-    } as WorkflowNode;
-    set({ nodes: [...get().nodes, node] });
-    return node;
-  },
+const boot = initialGraph();
 
-  updateNodeData: (nodeId, patch) => {
-    set({
-      nodes: get().nodes.map((n) =>
-        n.id === nodeId
-          ? ({ ...n, data: { ...n.data, ...patch } } as WorkflowNode)
-          : n,
-      ),
-    });
-  },
+export const useWorkflowStore = create<WorkflowState>()(
+  temporal(
+    (set, get) => ({
+      nodes: boot.nodes,
+      edges: boot.edges,
+      selectedNodeId: null,
 
-  deleteNode: (nodeId) => {
-    set({
-      nodes: get().nodes.filter((n) => n.id !== nodeId),
-      edges: get().edges.filter(
-        (e) => e.source !== nodeId && e.target !== nodeId,
-      ),
-      selectedNodeId:
-        get().selectedNodeId === nodeId ? null : get().selectedNodeId,
-    });
-  },
+      onNodesChange: (changes) => {
+        set({ nodes: applyNodeChanges(changes, get().nodes) });
+      },
+      onEdgesChange: (changes) => {
+        set({ edges: applyEdgeChanges(changes, get().edges) });
+      },
+      onConnect: (connection) => {
+        if (connection.source === connection.target) return;
+        const { source, target, edges } = {
+          source: connection.source,
+          target: connection.target,
+          edges: get().edges,
+        };
+        const exists = edges.some(
+          (e) =>
+            e.source === source &&
+            e.target === target &&
+            e.sourceHandle === (connection.sourceHandle ?? null) &&
+            e.targetHandle === (connection.targetHandle ?? null),
+        );
+        if (exists) return;
+        set({
+          edges: addEdge(
+            { ...connection, id: `e-${nanoid(8)}`, animated: true },
+            edges,
+          ),
+        });
+      },
 
-  deleteEdge: (edgeId) => {
-    set({ edges: get().edges.filter((e) => e.id !== edgeId) });
-  },
+      addNode: (kind, position) => {
+        const node = {
+          id: `${kind}-${nanoid(6)}`,
+          type: kind,
+          position,
+          data: createNodeData(kind),
+        } as WorkflowNode;
+        set({ nodes: [...get().nodes, node] });
+        return node;
+      },
 
-  setSelectedNode: (nodeId) => set({ selectedNodeId: nodeId }),
+      updateNodeData: (nodeId, patch) => {
+        set({
+          nodes: get().nodes.map((n) =>
+            n.id === nodeId
+              ? ({ ...n, data: { ...n.data, ...patch } } as WorkflowNode)
+              : n,
+          ),
+        });
+      },
 
-  loadGraph: (graph) =>
-    set({ nodes: graph.nodes, edges: graph.edges, selectedNodeId: null }),
+      deleteNode: (nodeId) => {
+        set({
+          nodes: get().nodes.filter((n) => n.id !== nodeId),
+          edges: get().edges.filter(
+            (e) => e.source !== nodeId && e.target !== nodeId,
+          ),
+          selectedNodeId:
+            get().selectedNodeId === nodeId ? null : get().selectedNodeId,
+        });
+      },
 
-  resetGraph: () =>
-    set({ nodes: seedNodes, edges: [], selectedNodeId: null }),
-}));
+      deleteEdge: (edgeId) => {
+        set({ edges: get().edges.filter((e) => e.id !== edgeId) });
+      },
+
+      setSelectedNode: (nodeId) => set({ selectedNodeId: nodeId }),
+
+      loadGraph: (graph) =>
+        set({ nodes: graph.nodes, edges: graph.edges, selectedNodeId: null }),
+
+      resetGraph: () =>
+        set({ nodes: seedNodes, edges: [], selectedNodeId: null }),
+
+      exportGraph: () => ({ nodes: get().nodes, edges: get().edges }),
+    }),
+    {
+      limit: 50,
+      partialize: (state) => ({
+        nodes: state.nodes,
+        edges: state.edges,
+      }),
+      equality: (a, b) => a.nodes === b.nodes && a.edges === b.edges,
+    },
+  ),
+);
 
 export const selectSelectedNode = (state: WorkflowState): WorkflowNode | null =>
   state.selectedNodeId
     ? (state.nodes.find((n) => n.id === state.selectedNodeId) ?? null)
     : null;
+
+let persistTimer: number | null = null;
+useWorkflowStore.subscribe((state, prev) => {
+  if (state.nodes === prev.nodes && state.edges === prev.edges) return;
+  if (persistTimer !== null) window.clearTimeout(persistTimer);
+  persistTimer = window.setTimeout(() => {
+    saveToLocalStorage({ nodes: state.nodes, edges: state.edges });
+    persistTimer = null;
+  }, 400);
+});
+
+export const useTemporalStore = useWorkflowStore.temporal;

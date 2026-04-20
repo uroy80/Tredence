@@ -1,12 +1,14 @@
 import { memo } from 'react';
-import type { NodeProps, NodeTypes } from '@xyflow/react';
+import type { NodeProps } from '@xyflow/react';
 import { NodeShell } from './NodeShell';
 import {
   ApprovalIcon,
   BoltIcon,
+  CalendarIcon,
   FlagIcon,
   PlayIcon,
   TaskIcon,
+  UserIcon,
 } from '@/components/icons';
 import { findAutomation } from '@/api';
 import type {
@@ -53,11 +55,13 @@ export const TaskNode = memo(({ data, selected }: NodeProps<TaskNodeType>) => (
     selected={selected}
   >
     <div className="flex items-center justify-between gap-2">
-      <span className="truncate">
-        {data.assignee ? `👤 ${data.assignee}` : 'Unassigned'}
+      <span className="flex min-w-0 items-center gap-1 truncate">
+        <UserIcon width={11} height={11} className="shrink-0" />
+        <span className="truncate">{data.assignee || 'Unassigned'}</span>
       </span>
       {data.dueDate && (
-        <span className="shrink-0 rounded bg-blue-50 px-1.5 py-0.5 text-[10px] font-medium text-blue-700">
+        <span className="flex shrink-0 items-center gap-1 rounded bg-blue-50 px-1.5 py-0.5 text-[10px] font-medium text-blue-700">
+          <CalendarIcon width={10} height={10} />
           {data.dueDate}
         </span>
       )}
@@ -133,11 +137,3 @@ export const EndNode = memo(({ data, selected }: NodeProps<EndNodeType>) => (
   />
 ));
 EndNode.displayName = 'EndNode';
-
-export const nodeTypes: NodeTypes = {
-  start: StartNode,
-  task: TaskNode,
-  approval: ApprovalNode,
-  automated: AutomatedNode,
-  end: EndNode,
-};

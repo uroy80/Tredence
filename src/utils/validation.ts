@@ -109,7 +109,7 @@ export function validateWorkflow({ nodes, edges }: ValidateArgs): ValidationResu
     if (!reachable.has(endNodes[0].id)) {
       issues.push({
         kind: 'warning',
-        message: 'End node is not reachable from Start node.',
+        message: 'End node is unreachable from the Start node.',
       });
     }
   }

@@ -11,7 +11,7 @@ import {
   type OnSelectionChangeParams,
 } from '@xyflow/react';
 import { useWorkflowStore } from '@/store/workflowStore';
-import { nodeTypes } from '@/features/workflow/nodes/nodeTypes';
+import { nodeTypes } from '@/features/workflow/nodes/nodeTypesMap';
 import { DRAG_MIME } from '@/features/workflow/sidebar/Sidebar';
 import type { NodeKind, WorkflowNode } from '@/types';
 

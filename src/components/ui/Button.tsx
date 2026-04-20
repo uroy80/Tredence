@@ -1,4 +1,4 @@
-import type { ButtonHTMLAttributes, ReactNode } from 'react';
+import { forwardRef, type ButtonHTMLAttributes, type ReactNode } from 'react';
 import clsx from 'clsx';
 
 type Variant = 'primary' | 'secondary' | 'ghost' | 'danger';
@@ -26,19 +26,16 @@ const sizeMap: Record<Size, string> = {
   md: 'text-sm px-3 py-2 rounded-md gap-2',
 };
 
-export function Button({
-  variant = 'secondary',
-  size = 'md',
-  icon,
-  className,
-  children,
-  ...rest
-}: ButtonProps) {
+export const Button = forwardRef<HTMLButtonElement, ButtonProps>(function Button(
+  { variant = 'secondary', size = 'md', icon, className, children, ...rest },
+  ref,
+) {
   return (
     <button
+      ref={ref}
       {...rest}
       className={clsx(
-        'inline-flex items-center justify-center font-medium transition-colors disabled:cursor-not-allowed disabled:opacity-60',
+        'inline-flex items-center justify-center font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-primary)]/40 focus-visible:ring-offset-1 disabled:cursor-not-allowed disabled:opacity-60',
         variantMap[variant],
         sizeMap[size],
         className,
@@ -48,4 +45,4 @@ export function Button({
       {children}
     </button>
   );
-}
+});
