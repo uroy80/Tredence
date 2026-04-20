@@ -1,0 +1,68 @@
+@import "tailwindcss";
+@import "@xyflow/react/dist/style.css";
+
+@theme {
+  --color-bg: #f8fafc;
+  --color-surface: #ffffff;
+  --color-border: #e2e8f0;
+  --color-ink: #0f172a;
+  --color-muted: #64748b;
+  --color-primary: #6366f1;
+  --color-primary-600: #4f46e5;
+  --color-success: #10b981;
+  --color-warn: #f59e0b;
+  --color-danger: #ef4444;
+
+  --color-start: #10b981;
+  --color-task: #3b82f6;
+  --color-approval: #f59e0b;
+  --color-automated: #8b5cf6;
+  --color-end: #ef4444;
+}
+
+html,
+body,
+#root {
+  height: 100%;
+  margin: 0;
+  background: var(--color-bg);
+  color: var(--color-ink);
+  font-family: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+}
+
+#root {
+  display: flex;
+  flex-direction: column;
+}
+
+.react-flow__node {
+  font-family: inherit;
+}
+
+.react-flow__edge-path {
+  stroke: #94a3b8;
+  stroke-width: 1.5;
+}
+
+.react-flow__edge.selected .react-flow__edge-path,
+.react-flow__edge:focus .react-flow__edge-path {
+  stroke: var(--color-primary);
+  stroke-width: 2;
+}
+
+.react-flow__handle {
+  width: 10px;
+  height: 10px;
+  background: #ffffff;
+  border: 2px solid #94a3b8;
+}
+
+.react-flow__handle:hover {
+  border-color: var(--color-primary);
+}
+
+.react-flow__attribution {
+  background: transparent !important;
+  font-size: 10px;
+  opacity: 0.6;
+}
